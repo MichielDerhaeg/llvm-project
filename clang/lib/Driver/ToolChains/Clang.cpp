@@ -4807,9 +4807,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
         options::OPT_Xassembler,
         options::OPT_mllvm,
     };
-    for (const auto &A : Args)
-      if (llvm::is_contained(kBitcodeOptionIgnorelist, A->getOption().getID()))
-        D.Diag(diag::err_drv_unsupported_embed_bitcode) << A->getSpelling();
+    if (RawTriple.isOSDarwin())
+      for (const auto &A : Args)
+        if (llvm::is_contained(kBitcodeOptionIgnorelist,
+                               A->getOption().getID()))
+          D.Diag(diag::err_drv_unsupported_embed_bitcode) << A->getSpelling();
 
     // Render the CodeGen options that need to be passed.
     Args.addOptOutFlag(CmdArgs, options::OPT_foptimize_sibling_calls,
