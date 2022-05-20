@@ -4762,9 +4762,9 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     // Render target options.
     TC.addClangTargetOptions(Args, CmdArgs, JA.getOffloadingDeviceKind());
 
-    // reject options that shouldn't be supported in bitcode
-    // also reject kernel/kext
-    static const constexpr unsigned kBitcodeOptionIgnorelist[] = {
+    // TODO dox
+    // TODO Check which of these imply function attributes
+    static const constexpr unsigned kBitcodeOptionABIlist[] = {
         options::OPT_mkernel,
         options::OPT_fapple_kext,
         options::OPT_ffunction_sections,
@@ -4807,11 +4807,13 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
         options::OPT_Xassembler,
         options::OPT_mllvm,
     };
-    if (RawTriple.isOSDarwin())
-      for (const auto &A : Args)
-        if (llvm::is_contained(kBitcodeOptionIgnorelist,
-                               A->getOption().getID()))
+    for (const auto &A : Args)
+      if (llvm::is_contained(kBitcodeOptionABIlist, A->getOption().getID())) {
+        if (RawTriple.isOSDarwin())
           D.Diag(diag::err_drv_unsupported_embed_bitcode) << A->getSpelling();
+        else
+          A->render(Args, CmdArgs);
+      }
 
     // Render the CodeGen options that need to be passed.
     Args.addOptOutFlag(CmdArgs, options::OPT_foptimize_sibling_calls,
