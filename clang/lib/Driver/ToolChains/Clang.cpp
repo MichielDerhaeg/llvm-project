@@ -4762,58 +4762,91 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     // Render target options.
     TC.addClangTargetOptions(Args, CmdArgs, JA.getOffloadingDeviceKind());
 
-    // TODO dox
-    // TODO Check which of these imply function attributes
-    static const constexpr unsigned kBitcodeOptionABIlist[] = {
-        options::OPT_mkernel,
-        options::OPT_fapple_kext,
-        options::OPT_ffunction_sections,
-        options::OPT_fno_function_sections,
-        options::OPT_fdata_sections,
-        options::OPT_fno_data_sections,
-        options::OPT_fbasic_block_sections_EQ,
-        options::OPT_funique_internal_linkage_names,
-        options::OPT_fno_unique_internal_linkage_names,
-        options::OPT_funique_section_names,
-        options::OPT_fno_unique_section_names,
-        options::OPT_funique_basic_block_section_names,
-        options::OPT_fno_unique_basic_block_section_names,
-        options::OPT_mrestrict_it,
-        options::OPT_mno_restrict_it,
-        options::OPT_mstackrealign,
-        options::OPT_mno_stackrealign,
-        options::OPT_mstack_alignment,
-        options::OPT_mcmodel_EQ,
-        options::OPT_mlong_calls,
-        options::OPT_mno_long_calls,
-        options::OPT_ggnu_pubnames,
-        options::OPT_gdwarf_aranges,
-        options::OPT_fdebug_types_section,
-        options::OPT_fno_debug_types_section,
-        options::OPT_fdwarf_directory_asm,
-        options::OPT_fno_dwarf_directory_asm,
-        options::OPT_mrelax_all,
-        options::OPT_mno_relax_all,
-        options::OPT_ftrap_function_EQ,
-        options::OPT_ffixed_r9,
-        options::OPT_mfix_cortex_a53_835769,
-        options::OPT_mno_fix_cortex_a53_835769,
-        options::OPT_ffixed_x18,
-        options::OPT_mglobal_merge,
-        options::OPT_mno_global_merge,
-        options::OPT_mred_zone,
-        options::OPT_mno_red_zone,
-        options::OPT_Wa_COMMA,
-        options::OPT_Xassembler,
-        options::OPT_mllvm,
-    };
-    for (const auto &A : Args)
-      if (llvm::is_contained(kBitcodeOptionABIlist, A->getOption().getID())) {
-        if (RawTriple.isOSDarwin())
-          D.Diag(diag::err_drv_unsupported_embed_bitcode) << A->getSpelling();
-        else
-          A->render(Args, CmdArgs);
-      }
+    for (const auto &A : Args) {
+      // For Apple platforms, the following options are disallowed to limit the
+      // ability to change the backend behaviour and ABI. This is to ensure the
+      // bitcode can be retargeted to certain architectures.
+      static const constexpr unsigned kBitcodeOptionIgnorelist[] = {
+          options::OPT_mkernel,
+          options::OPT_fapple_kext,
+          options::OPT_ffunction_sections,
+          options::OPT_fno_function_sections,
+          options::OPT_fdata_sections,
+          options::OPT_fno_data_sections,
+          options::OPT_fbasic_block_sections_EQ,
+          options::OPT_funique_internal_linkage_names,
+          options::OPT_fno_unique_internal_linkage_names,
+          options::OPT_funique_section_names,
+          options::OPT_fno_unique_section_names,
+          options::OPT_funique_basic_block_section_names,
+          options::OPT_fno_unique_basic_block_section_names,
+          options::OPT_mrestrict_it,
+          options::OPT_mno_restrict_it,
+          options::OPT_mstackrealign,
+          options::OPT_mno_stackrealign,
+          options::OPT_mstack_alignment,
+          options::OPT_mcmodel_EQ,
+          options::OPT_mlong_calls,
+          options::OPT_mno_long_calls,
+          options::OPT_ggnu_pubnames,
+          options::OPT_gdwarf_aranges,
+          options::OPT_fdebug_types_section,
+          options::OPT_fno_debug_types_section,
+          options::OPT_fdwarf_directory_asm,
+          options::OPT_fno_dwarf_directory_asm,
+          options::OPT_mrelax_all,
+          options::OPT_mno_relax_all,
+          options::OPT_ftrap_function_EQ,
+          options::OPT_ffixed_r9,
+          options::OPT_mfix_cortex_a53_835769,
+          options::OPT_mno_fix_cortex_a53_835769,
+          options::OPT_ffixed_x18,
+          options::OPT_mglobal_merge,
+          options::OPT_mno_global_merge,
+          options::OPT_mred_zone,
+          options::OPT_mno_red_zone,
+          options::OPT_Wa_COMMA,
+          options::OPT_Xassembler,
+          options::OPT_mllvm,
+      };
+      if (RawTriple.isOSDarwin() &&
+          llvm::is_contained(kBitcodeOptionIgnorelist, A->getOption().getID()))
+        D.Diag(diag::err_drv_unsupported_embed_bitcode) << A->getSpelling();
+    }
+
+    for (const auto &A : Args) {
+      // These options are not represented by any attribute in bitcode. We
+      // simply propagate these so that they take effect and are preserved in
+      // `.llvmcmd`.
+      static const constexpr unsigned bitcodeOptionPropagateList[] = {
+          options::OPT_ffunction_sections,
+          options::OPT_fno_function_sections,
+          options::OPT_fdata_sections,
+          options::OPT_fno_data_sections,
+          options::OPT_fbasic_block_sections_EQ,
+          options::OPT_funique_section_names,
+          options::OPT_fno_unique_section_names,
+          options::OPT_funique_basic_block_section_names,
+          options::OPT_fno_unique_basic_block_section_names,
+          options::OPT_mrestrict_it, // Wonder what this does.
+          options::OPT_mno_restrict_it,
+          options::OPT_gdwarf_aranges,
+          options::OPT_fdebug_types_section,
+          options::OPT_fno_debug_types_section,
+          options::OPT_fdwarf_directory_asm,
+          options::OPT_fno_dwarf_directory_asm,
+          options::OPT_mrelax_all,
+          options::OPT_mno_relax_all,
+          options::OPT_mglobal_merge,
+          options::OPT_mno_global_merge,
+          options::OPT_Wa_COMMA,
+          options::OPT_Xassembler,
+          options::OPT_mllvm,
+      };
+      if (llvm::is_contained(bitcodeOptionPropagateList,
+                             A->getOption().getID()))
+        A->render(Args, CmdArgs);
+    }
 
     // Render the CodeGen options that need to be passed.
     Args.addOptOutFlag(CmdArgs, options::OPT_foptimize_sibling_calls,
