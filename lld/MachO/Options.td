@@ -1163,9 +1163,8 @@ def add_split_seg_info : Flag<["-"], "add_split_seg_info">,
     Flags<[HelpHidden]>,
     Group<grp_undocumented>;
 def allow_dead_duplicates : Flag<["-"], "allow_dead_duplicates">,
-    HelpText<"This option is undocumented in ld64">,
-    Flags<[HelpHidden]>,
-    Group<grp_undocumented>;
+    HelpText<"TODO">,
+    Group<grp_opts>;
 def allow_simulator_linking_to_macosx_dylibs : Flag<["-"], "allow_simulator_linking_to_macosx_dylibs">,
     HelpText<"This option is undocumented in ld64">,
     Flags<[HelpHidden]>,

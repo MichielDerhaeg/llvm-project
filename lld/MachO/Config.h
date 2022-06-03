@@ -191,6 +191,8 @@ struct Configuration {
 
   bool zeroModTime = false;
 
+  bool allowDeadDuplicates = false;
+
   llvm::StringRef osoPrefix;
 
   llvm::MachO::Architecture arch() const { return platformInfo.target.Arch; }

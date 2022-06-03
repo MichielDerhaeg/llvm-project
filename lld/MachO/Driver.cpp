@@ -1302,6 +1302,7 @@ bool macho::link(ArrayRef<const char *> argsArr, llvm::raw_ostream &stdoutOS,
   config->callGraphProfileSort = args.hasFlag(
       OPT_call_graph_profile_sort, OPT_no_call_graph_profile_sort, true);
   config->printSymbolOrder = args.getLastArgValue(OPT_print_symbol_order);
+  config->allowDeadDuplicates = args.hasArg(OPT_allow_dead_duplicates);
 
   // FIXME: Add a commandline flag for this too.
   config->zeroModTime = getenv("ZERO_AR_DATE");
@@ -1604,6 +1605,18 @@ bool macho::link(ArrayRef<const char *> argsArr, llvm::raw_ostream &stdoutOS,
 
     if (config->deadStrip)
       markLive();
+
+    for (auto* symbol : symtab->getSymbols()) {
+      if (auto* defined = dyn_cast<Defined>(symbol)) {
+        if (defined->isDuplicate &&
+            !(defined->used
+              && config->deadStrip
+              && config->allowDeadDuplicates)) {
+          error("duplicate symbol: " + defined->getName() + "\n>>> defined in " +
+                toString(defined->getFile()));
+        }
+      }
+    }
 
     // ICF assumes that all literals have been folded already, so we must run
     // foldIdenticalLiterals before foldIdenticalSections.
