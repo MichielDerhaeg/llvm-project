@@ -15,8 +15,8 @@
 # CHECK-NEXT: >>> defined in {{.*}}/main.o
 # CHECK-NEXT: >>> defined in {{.*}}/duplicates.o
 
-# TODO: %lld -dead_strip -allow_dead_duplicates -exported_symbol _main \
-# TODO:     %t/main.o %t/duplicates.o -o %t/main
+# RUN: %lld -dead_strip -allow_dead_duplicates \
+# RUN:     %t/main.o %t/duplicates.o -o %t/main
 
 #--- main.s
 .globl _a
@@ -32,6 +32,7 @@ _main:
   callq	_c
   retq
 
+.subsections_via_symbols
 #--- duplicates.s
 .globl _a
 _a:
@@ -44,3 +45,5 @@ _b:
 .globl _c
 _c:
   retq
+
+.subsections_via_symbols
