@@ -51,9 +51,8 @@ Defined::Defined(StringRefZ name, InputFile *file, InputSection *isec,
       wasIdenticalCodeFolded(false), thumb(isThumb),
       referencedDynamically(isReferencedDynamically), noDeadStrip(noDeadStrip),
       interposable(interposable), weakDefCanBeHidden(isWeakDefCanBeHidden),
-      isDuplicate(isDuplicate),
-      weakDef(isWeakDef), external(isExternal), isec(isec), value(value),
-      size(size) {
+      isDuplicate(isDuplicate), weakDef(isWeakDef), external(isExternal),
+      isec(isec), value(value), size(size) {
   if (isec) {
     isec->symbols.push_back(this);
     // Maintain sorted order.

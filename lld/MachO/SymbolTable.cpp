@@ -9,6 +9,7 @@
 #include "SymbolTable.h"
 #include "ConcatOutputSection.h"
 #include "Config.h"
+#include "Diagnostics.h"
 #include "InputFiles.h"
 #include "InputSection.h"
 #include "Symbols.h"
@@ -84,9 +85,8 @@ Defined *SymbolTable::addDefined(StringRef name, InputFile *file,
         }
       } else {
         defined->isDuplicate = true;
-        //error("duplicate symbol: " + name + "\n>>> defined in " +
-        //      toString(defined->getFile()) + "\n>>> defined in " +
-        //      toString(file));
+        diagnostics->addDuplicate(*defined, *defined->getFile(), *file);
+        return defined;
       }
 
     } else if (auto *dysym = dyn_cast<DylibSymbol>(s)) {

@@ -8,6 +8,7 @@
 
 #include "Driver.h"
 #include "Config.h"
+#include "Diagnostics.h"
 #include "ICF.h"
 #include "InputFiles.h"
 #include "LTO.h"
@@ -62,6 +63,7 @@ using namespace lld::macho;
 
 std::unique_ptr<Configuration> macho::config;
 std::unique_ptr<DependencyTracker> macho::depTracker;
+std::unique_ptr<Diagnostics> macho::diagnostics;
 
 static HeaderFileType getOutputType(const InputArgList &args) {
   // TODO: -r, -dylinker, -preload...
@@ -1155,6 +1157,7 @@ bool macho::link(ArrayRef<const char *> argsArr, llvm::raw_ostream &stdoutOS,
   target = createTargetInfo(args);
   depTracker = std::make_unique<DependencyTracker>(
       args.getLastArgValue(OPT_dependency_info));
+  diagnostics = std::make_unique<Diagnostics>();
   if (errorCount())
     return false;
 
@@ -1606,17 +1609,8 @@ bool macho::link(ArrayRef<const char *> argsArr, llvm::raw_ostream &stdoutOS,
     if (config->deadStrip)
       markLive();
 
-    for (auto* symbol : symtab->getSymbols()) {
-      if (auto* defined = dyn_cast<Defined>(symbol)) {
-        if (defined->isDuplicate &&
-            !(defined->used
-              && config->deadStrip
-              && config->allowDeadDuplicates)) {
-          error("duplicate symbol: " + defined->getName() + "\n>>> defined in " +
-                toString(defined->getFile()));
-        }
-      }
-    }
+    diagnostics->reportDuplicates(config->deadStrip &&
+                                  config->allowDeadDuplicates);
 
     // ICF assumes that all literals have been folded already, so we must run
     // foldIdenticalLiterals before foldIdenticalSections.

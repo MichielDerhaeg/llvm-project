@@ -11,6 +11,7 @@ add_lld_library(lldMachO
   Arch/ARM64_32.cpp
   Arch/X86_64.cpp
   ConcatOutputSection.cpp
+  Diagnostics.cpp
   Driver.cpp
   DriverUtils.cpp
   Dwarf.cpp
