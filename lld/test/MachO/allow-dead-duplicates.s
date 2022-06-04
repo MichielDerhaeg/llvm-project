@@ -6,9 +6,17 @@
 # RUN:     %t/main.s -o %t/main.o
 # RUN: llvm-mc -filetype=obj -triple=x86_64-apple-macos \
 # RUN:     %t/duplicates.s -o %t/duplicates.o
-# RUN: %lld -dead_strip -allow_dead_duplicates \
-# RUN:     %t/main.o %t/duplicates.o \
-# RUN:     -o %t/main
+# RUN: not %lld %t/main.o %t/duplicates.o -o %t/main 2>&1 | FileCheck %s
+
+# CHECK:      duplicate symbol: _a
+# CHECK-NEXT: >>> defined in {{.*}}/main.o
+# CHECK-NEXT: >>> defined in {{.*}}/duplicates.o
+# CHECK-NEXT: duplicate symbol: _b
+# CHECK-NEXT: >>> defined in {{.*}}/main.o
+# CHECK-NEXT: >>> defined in {{.*}}/duplicates.o
+
+# TODO: %lld -dead_strip -allow_dead_duplicates -exported_symbol _main \
+# TODO:     %t/main.o %t/duplicates.o -o %t/main
 
 #--- main.s
 .globl _a
