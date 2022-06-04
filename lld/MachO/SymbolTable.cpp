@@ -84,8 +84,8 @@ Defined *SymbolTable::addDefined(StringRef name, InputFile *file,
           concatIsec->symbols.erase(llvm::find(concatIsec->symbols, defined));
         }
       } else {
-        defined->isDuplicate = true;
         diagnostics->addDuplicate(*defined, *defined->getFile(), *file);
+        // TODO comment
         return defined;
       }
 

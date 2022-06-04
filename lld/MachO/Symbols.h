@@ -119,8 +119,7 @@ public:
           uint64_t size, bool isWeakDef, bool isExternal, bool isPrivateExtern,
           bool includeInSymtab, bool isThumb, bool isReferencedDynamically,
           bool noDeadStrip, bool canOverrideWeakDef = false,
-          bool isWeakDefCanBeHidden = false, bool interposable = false,
-          bool isDuplicate = false);
+          bool isWeakDefCanBeHidden = false, bool interposable = false);
 
   bool isWeakDef() const override { return weakDef; }
   bool isExternalWeakDef() const {
@@ -172,8 +171,6 @@ public:
   bool interposable : 1;
 
   bool weakDefCanBeHidden : 1;
-
-  bool isDuplicate : 1;
 
 private:
   const bool weakDef : 1;
