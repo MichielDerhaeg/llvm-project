@@ -315,6 +315,9 @@ def no_deduplicate : Flag<["-"], "no_deduplicate">,
     HelpText<"Disable code deduplicaiton (synonym for `--icf=none')">,
     Alias<icf_eq>, AliasArgs<["none"]>,
     Group<grp_opts>;
+def allow_dead_duplicates : Flag<["-"], "allow_dead_duplicates">,
+    HelpText<"Allow duplicate symbol definitions if they will be stripped (e.g. by `-dead_strip').">,
+    Group<grp_opts>;
 
 def grp_version : OptionGroup<"version">, HelpText<"VERSION TARGETING">;
 
@@ -1162,9 +1165,6 @@ def add_split_seg_info : Flag<["-"], "add_split_seg_info">,
     HelpText<"This option is undocumented in ld64">,
     Flags<[HelpHidden]>,
     Group<grp_undocumented>;
-def allow_dead_duplicates : Flag<["-"], "allow_dead_duplicates">,
-    HelpText<"TODO">,
-    Group<grp_opts>;
 def allow_simulator_linking_to_macosx_dylibs : Flag<["-"], "allow_simulator_linking_to_macosx_dylibs">,
     HelpText<"This option is undocumented in ld64">,
     Flags<[HelpHidden]>,
