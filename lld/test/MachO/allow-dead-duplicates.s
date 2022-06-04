@@ -11,7 +11,7 @@
 # CHECK:      duplicate symbol: _a
 # CHECK-NEXT: >>> defined in {{.*}}/main.o
 # CHECK-NEXT: >>> defined in {{.*}}/duplicates.o
-# CHECK-NEXT: duplicate symbol: _b
+# CHECK:      duplicate symbol: _b
 # CHECK-NEXT: >>> defined in {{.*}}/main.o
 # CHECK-NEXT: >>> defined in {{.*}}/duplicates.o
 

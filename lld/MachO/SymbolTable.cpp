@@ -9,7 +9,7 @@
 #include "SymbolTable.h"
 #include "ConcatOutputSection.h"
 #include "Config.h"
-#include "Diagnostics.h"
+#include "Duplicates.h"
 #include "InputFiles.h"
 #include "InputSection.h"
 #include "Symbols.h"
@@ -84,7 +84,7 @@ Defined *SymbolTable::addDefined(StringRef name, InputFile *file,
           concatIsec->symbols.erase(llvm::find(concatIsec->symbols, defined));
         }
       } else {
-        diagnostics->addDuplicate(*defined, *defined->getFile(), *file);
+        duplicates->add(*defined, *defined->getFile(), *file);
         // TODO comment
         return defined;
       }

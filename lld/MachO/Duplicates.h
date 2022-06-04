@@ -11,18 +11,16 @@
 namespace lld {
 namespace macho {
 
-struct Diagnostics {
+struct DuplicateSymbols {
 
-  void addDuplicate(const Symbol &sym, const InputFile &file1,
-                    const InputFile &file2);
-
-  void reportDuplicates(bool allowDeadDuplicates);
+  void add(const Symbol &sym, const InputFile &file1, const InputFile &file2);
+  void report(bool allowDeadDuplicates);
 
   llvm::DenseMap<const Symbol *, llvm::SmallVector<const InputFile *, 2>>
       duplicateSymbols;
 };
 
-extern std::unique_ptr<Diagnostics> diagnostics;
+extern std::unique_ptr<DuplicateSymbols> duplicates;
 
 } // namespace macho
 } // namespace lld

@@ -8,7 +8,7 @@
 
 #include "Driver.h"
 #include "Config.h"
-#include "Diagnostics.h"
+#include "Duplicates.h"
 #include "ICF.h"
 #include "InputFiles.h"
 #include "LTO.h"
@@ -63,7 +63,7 @@ using namespace lld::macho;
 
 std::unique_ptr<Configuration> macho::config;
 std::unique_ptr<DependencyTracker> macho::depTracker;
-std::unique_ptr<Diagnostics> macho::diagnostics;
+std::unique_ptr<DuplicateSymbols> macho::duplicates;
 
 static HeaderFileType getOutputType(const InputArgList &args) {
   // TODO: -r, -dylinker, -preload...
@@ -1157,7 +1157,7 @@ bool macho::link(ArrayRef<const char *> argsArr, llvm::raw_ostream &stdoutOS,
   target = createTargetInfo(args);
   depTracker = std::make_unique<DependencyTracker>(
       args.getLastArgValue(OPT_dependency_info));
-  diagnostics = std::make_unique<Diagnostics>();
+  duplicates = std::make_unique<DuplicateSymbols>();
   if (errorCount())
     return false;
 
@@ -1609,8 +1609,8 @@ bool macho::link(ArrayRef<const char *> argsArr, llvm::raw_ostream &stdoutOS,
     if (config->deadStrip)
       markLive();
 
-    diagnostics->reportDuplicates(config->deadStrip &&
-                                  config->allowDeadDuplicates);
+    // TODO comment
+    duplicates->report(config->deadStrip && config->allowDeadDuplicates);
 
     // ICF assumes that all literals have been folded already, so we must run
     // foldIdenticalLiterals before foldIdenticalSections.
